@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Treasure Hunt</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <h1>Memory Treasure Hunt</h1>
+
+    <div id="game-container">
+      <div id="side-panel">
+        <div>Index Register: <span id="index-register"></span></div>
+        <div>Current Path:</div>
+        <div id="path-taken"></div>
+      </div>
+
+      <table id="memory-table">
+        <thead>
+          <tr>
+            <th>Address</th>
+            <th>Value</th>
+            <th>Address</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+        <tbody id="memory-rows">
+          <!-- Memory rows and headers will be dynamically generated -->
+        </tbody>
+      </table>
+    </div>
+
+    <div id="game-info">
+      Instructions: Follow the addressing modes to find the treasure! Click on
+      memory locations to navigate.
+    </div>
+
+    <button id="reset-btn">Reset Game</button>
+  </body>
+  <script src="script.js"></script>
+</html>

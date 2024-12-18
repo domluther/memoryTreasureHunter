@@ -1,0 +1,95 @@
+body {
+  font-family: 'Courier New', monospace;
+  background-color: #0a1f0a;
+  color: #00ff41;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  line-height: 1.6;
+}
+
+#game-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+}
+
+#memory-table {
+  border-collapse: collapse;
+  background-color: #0d2d0d;
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+#memory-table th,
+#memory-table td {
+  border: 2px solid #00ff41;
+  padding: 10px;
+  text-align: center;
+  min-width: 80px;
+}
+
+#memory-table th {
+  background-color: #0d2d0d;
+  color: #00ff41;
+}
+
+#memory-table td {
+  background-color: #0a1f0a;
+  transition: background-color 0.3s ease;
+  min-width: 60px; /* Adjusted for smaller cells */
+}
+
+#memory-table td:hover {
+  background-color: #0d2d0d;
+  cursor: pointer;
+}
+
+.highlighted {
+  background-color: #00a020 !important;
+}
+
+.clicked-path {
+  background-color: #006020 !important;
+}
+
+#game-info {
+  background-color: #0d2d0d;
+  padding: 15px;
+  border: 2px solid #00ff41;
+  margin-top: 20px;
+  width: 100%;
+  max-width: 800px;
+}
+
+.treasure {
+  color: #ffd700;
+  font-weight: bold;
+}
+
+.instruction {
+  color: #00ccff;
+}
+
+button {
+  background-color: #00ff41;
+  color: #0a1f0a;
+  border: none;
+  padding: 10px 20px;
+  margin: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #00a020;
+}
+
+#side-panel {
+  background-color: #0d2d0d;
+  border: 2px solid #00ff41;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  min-width: 200px;
+}
