@@ -336,7 +336,7 @@ program5: {
       { address: '13', value: 'Treasure: 🪝' },
       { address: '14', value: 'Direct 34' },
       { address: '15', value: '15' },
-      { address: '16', 'value': 'Treasure: 🔗' },
+      { address: '16', value: 'Treasure: 🔗' },
       { address: '17', value: '24' },
       { address: '18', value: 'Treasure: ⛓️' },
       { address: '19', value: 'Indirect 31' },
@@ -467,6 +467,10 @@ class MemoryTreasureHunt {
     this.currentAddress = '00';
     this.gameOver = false;
     this.firstInstruction = '';
+    this.nextValidAddress = null;
+    this.currentInstruction = '';
+    this.instructionStep = 0; // Track multi-step instructions (0 = get instruction, 1 = intermediate, 2 = final)
+    this.pendingInstruction = null; // Store the full instruction being processed
 
     this.selectRandomProgram();
     this.initializeMemory();
@@ -524,17 +528,37 @@ class MemoryTreasureHunt {
     this.clickedPath = [];
     this.currentAddress = '00';
     this.gameOver = false;
+    this.instructionStep = 0;
+    this.pendingInstruction = null;
     
     // Use values from currentProgram instead of hardcoded values
     this.indexRegister = currentProgram.indexRegister;  // was: 4
     this.firstInstruction = currentProgram.startInstruction;  // was: 'Direct 09'
+    this.currentInstruction = this.firstInstruction;
     
     this.pathTakenEl.innerHTML = '';
 
-    // Enhanced game info display
+    // Calculate first valid address
+    this.nextValidAddress = this.calculateNextAddress(this.firstInstruction, 0);
+    
+    // Set instruction step for first instruction
+    if (this.firstInstruction.startsWith('Indirect ')) {
+      this.instructionStep = 1;
+      this.pendingInstruction = this.firstInstruction;
+    }
+
+    // Enhanced game info display with addressing mode help
     this.gameInfoEl.innerHTML = `
       <strong>Program: ${currentProgram.name}</strong><br>
-      Start by clicking on memory addresses. Your first instruction is <strong>${this.firstInstruction}</strong>.
+      Your first instruction is <strong>${this.firstInstruction}</strong>.<br>
+      Calculate which address to click!<br>
+      <div style="margin-top: 10px; padding: 10px; background: rgba(0,255,65,0.1); border-left: 3px solid #00ff41;">
+        📚 <strong>Addressing Modes:</strong><br>
+        <strong>Direct:</strong> Go directly to the specified address<br>
+        <strong>Indirect:</strong> First fetch from specified address, then go to that address (2 clicks)<br>
+        <strong>Indexed:</strong> Add Index Register to base address<br>
+        <strong>IR to X:</strong> Set Index Register to X, then follow next instruction
+      </div>
     `;
     
     this.updateIRDisplay();
@@ -549,11 +573,73 @@ class MemoryTreasureHunt {
     });
   }
 
+  calculateNextAddress(instruction, step = 0) {
+    if (instruction.startsWith('Direct ')) {
+      return instruction.split(' ')[1];
+    } else if (instruction.startsWith('Indirect ')) {
+      const indirectAddress = instruction.split(' ')[1];
+      if (step === 0) {
+        // First step: return the intermediate address
+        return indirectAddress;
+      } else {
+        // Second step: return what's stored at the indirect address
+        const indirectCell = document.querySelector(`td[data-address="${indirectAddress}"]`);
+        if (indirectCell) {
+          return indirectCell.nextElementSibling.textContent;
+        }
+      }
+    } else if (instruction.startsWith('Indexed ')) {
+      const baseAddress = instruction.split(' ')[1];
+      return String(parseInt(baseAddress) + this.indexRegister).padStart(2, '0');
+    }
+    return null;
+  }
+
+  getInstructionExplanation(instruction, nextAddress, step = 0) {
+    if (instruction.startsWith('Direct ')) {
+      return `<strong>Direct Addressing:</strong> Go directly to address ${nextAddress}`;
+    } else if (instruction.startsWith('Indirect ')) {
+      const indirectAddr = instruction.split(' ')[1];
+      if (step === 0 || step === 1) {
+        return `<strong>Indirect Addressing - Step 1:</strong> First, click on address ${indirectAddr} to fetch the target address stored there`;
+      } else {
+        return `<strong>Indirect Addressing - Step 2:</strong> Address ${indirectAddr} contains ${nextAddress}, so now click on address ${nextAddress}`;
+      }
+    } else if (instruction.startsWith('Indexed ')) {
+      const baseAddr = instruction.split(' ')[1];
+      return `<strong>Indexed Addressing:</strong> Base address ${baseAddr} + Index Register ${this.indexRegister} = ${nextAddress}`;
+    }
+    return '';
+  }
+
   navigateMemory(address) {
     if (this.gameOver) return;
 
-
-
+    // Validate that clicked address is the next valid address
+    if (this.nextValidAddress && address !== this.nextValidAddress) {
+      // Determine which instruction to show based on step
+      let displayInstruction = this.currentInstruction;
+      let stepInfo = '';
+      
+      if (this.instructionStep === 1) {
+        stepInfo = ' (Step 1: Fetch intermediate address)';
+      } else if (this.instructionStep === 2) {
+        stepInfo = ' (Step 2: Go to final address)';
+      }
+      
+      // Show error feedback
+      this.gameInfoEl.innerHTML = `
+        <strong>❌ Incorrect!</strong><br>
+        You clicked on address ${address}, but you should click on address <strong>${this.nextValidAddress}</strong>${stepInfo}.<br>
+        <div style="margin-top: 10px; padding: 8px; background: rgba(255,0,0,0.1); border-left: 3px solid #ff4141;">
+          ${this.getInstructionExplanation(displayInstruction, this.nextValidAddress, this.instructionStep)}
+        </div>
+        <div style="margin-top: 8px; font-size: 0.9em; color: #00ccff;">
+          💡 Tip: Look at the memory table to calculate the correct address
+        </div>
+      `;
+      return;
+    }
 
     // Find the row for the clicked address
     const addressCell = document.querySelector(`td[data-address="${address}"]`);
@@ -567,6 +653,42 @@ class MemoryTreasureHunt {
     this.clickedPath.push(address);
     this.updatePathDisplay();
 
+    // Check if we're in the middle of an indirect addressing instruction
+    if (this.instructionStep === 1 && this.pendingInstruction && this.pendingInstruction.startsWith('Indirect ')) {
+      // This is step 1 of indirect - we just clicked the intermediate address
+      // Now we need to read what's stored here and go to that address next
+      const finalAddress = value;
+      
+      this.gameInfoEl.innerHTML = `
+        ✅ <strong>Correct - Step 1 Complete!</strong><br>
+        Fetched from address ${address}: <strong>${value}</strong><br>
+        <div style="margin-top: 8px; padding: 8px; background: rgba(0,255,65,0.1); border-left: 3px solid #00ff41;">
+          <strong>Indirect Addressing - Step 1:</strong> Found address ${finalAddress} stored at location ${address}.<br>
+          <strong>Step 2:</strong> Now click on address <strong>${finalAddress}</strong> to get the instruction/data stored there.
+        </div>
+      `;
+
+      // Set up for the final step
+      this.instructionStep = 2;
+      this.nextValidAddress = finalAddress;
+      
+      // Mark cells in the path
+      this.clickedPath.forEach((path) => {
+        const cell = document.querySelector(`td[data-address="${path}"]`);
+        cell.classList.add('clicked-path');
+      });
+      return;
+    }
+
+    // If we just completed step 2 of an indirect instruction, reset the state
+    if (this.instructionStep === 2) {
+      this.instructionStep = 0;
+      this.pendingInstruction = null;
+    }
+
+    // Store the current instruction (the value we just clicked on)
+    this.currentInstruction = value;
+
     // Determine navigation based on value
     let nextAddress = null;
     let instructions = '';
@@ -575,20 +697,20 @@ class MemoryTreasureHunt {
       const irAddress = value.split(',')[0].split(' ')[2];
       this.indexRegister = parseInt(irAddress);
       value = value.split(',')[1].trim();
+      this.currentInstruction = value; // Update after stripping IR part
       this.updateIRDisplay();
     }
     if (value.startsWith('Direct ')) {
       // Direct addressing: go to the specified address
       nextAddress = value.split(' ')[1];
-      instructions = 'Direct addressing: Go to specified address';
+      instructions = '<strong>Direct Addressing:</strong> Go directly to the specified address';
     } else if (value.startsWith('Indirect ')) {
-      // Indirect addressing: go to the address stored in the specified location
+      // Indirect addressing: First go to intermediate address
       const indirectAddress = value.split(' ')[1];
-      const indirectCell = document.querySelector(
-        `td[data-address="${indirectAddress}"]`
-      );
-      nextAddress = indirectCell.nextElementSibling.textContent;
-      instructions = `Indirect addressing: Go to address stored in ${indirectAddress}`;
+      nextAddress = indirectAddress;
+      this.instructionStep = 1;
+      this.pendingInstruction = value;
+      instructions = `<strong>Indirect Addressing - Step 1:</strong> First, click on address ${indirectAddress} to fetch the actual target address`;
     } else if (value.startsWith('Indexed ')) {
       // Indexed addressing: add index register to the specified address
       const baseAddress = value.split(' ')[1];
@@ -596,7 +718,7 @@ class MemoryTreasureHunt {
         2,
         '0'
       );
-      instructions = `Indexed addressing: Base ${baseAddress} + Index ${this.indexRegister} = ${nextAddress}`;
+      instructions = `<strong>Indexed Addressing:</strong> Base ${baseAddress} + Index Register ${this.indexRegister} = ${nextAddress}`;
     } else if (value.startsWith('Treasure:')) {
       console.log('treasure found')
       // Found the treasure
@@ -642,11 +764,13 @@ class MemoryTreasureHunt {
 
     // Update game info at bottom
     this.gameInfoEl.innerHTML = `
-    Index Register: ${this.indexRegister}<br>                
-    Current Address: ${address}<br>
-                    Value: ${value}<br>
-                    ${instructions}
-                `;
+      ✅ <strong>Correct!</strong><br>
+      Current Address: ${address}<br>
+      Value: ${value}<br>
+      <div style="margin-top: 8px; padding: 8px; background: rgba(0,255,65,0.1); border-left: 3px solid #00ff41;">
+        ${instructions}
+      </div>
+    `;
 
     // Mark cells in the path
     this.clickedPath.forEach((path) => {
@@ -661,8 +785,11 @@ class MemoryTreasureHunt {
       );
       if (nextCell) {
         this.currentAddress = nextAddress;
+        // The next instruction is what we'll find at the next address (not calculated yet)
+        // So we just store what address to validate next
+        this.nextValidAddress = nextAddress;
       } else {
-        this.gameInfoEl.textContent += ' (Invalid next address)';
+        this.gameInfoEl.innerHTML += '<br>(Invalid next address)';
       }
     }
   }
