@@ -7,12 +7,29 @@ body {
   align-items: center;
   padding: 20px;
   line-height: 1.6;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+h1 {
+  text-align: center;
+  margin: 20px 0;
 }
 
 #game-container {
   display: flex;
   justify-content: center;
   gap: 20px;
+  width: 100%;
+  max-width: 1400px;
+  align-items: start;
+}
+
+@media (max-width: 1024px) {
+  #game-container {
+    flex-direction: column;
+    align-items: center;
+  }
 }
 
 #memory-table {
@@ -59,7 +76,8 @@ body {
   border: 2px solid #00ff41;
   margin-top: 20px;
   width: 100%;
-  max-width: 800px;
+  max-width: 1400px;
+  box-sizing: border-box;
 }
 
 .treasure {
@@ -79,10 +97,17 @@ button {
   margin: 10px;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  font-size: 16px;
+  font-weight: bold;
 }
 
 button:hover {
   background-color: #00a020;
+}
+
+#reset-btn {
+  display: block;
+  margin: 20px auto;
 }
 
 #side-panel {
@@ -91,7 +116,17 @@ button:hover {
   padding: 15px;
   display: flex;
   flex-direction: column;
-  min-width: 200px;
+  min-width: 250px;
+  max-width: 350px;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+@media (max-width: 1024px) {
+  #side-panel {
+    max-width: 100%;
+    max-height: none;
+  }
 }
 
 

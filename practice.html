@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Addressing Modes Practice</title>
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .code-block {
+        background-color: #0a1f0a;
+        border: 2px solid #00ff41;
+        padding: 20px;
+        margin: 0;
+        font-family: 'Courier New', monospace;
+        font-size: 16px;
+        box-sizing: border-box;
+        flex: 1;
+      }
+      
+      .code-block h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #00ccff;
+        font-size: 18px;
+      }
+      
+      .code-line {
+        display: flex;
+        margin: 8px 0;
+        font-size: 16px;
+      }
+      
+      .line-number {
+        color: #666;
+        margin-right: 20px;
+        min-width: 25px;
+        text-align: right;
+        user-select: none;
+      }
+      
+      .code-content {
+        color: #00ff41;
+        font-weight: 500;
+      }
+      
+      .memory-section {
+        background-color: #0d2d0d;
+        border: 2px solid #00ff41;
+        padding: 20px;
+        margin: 0;
+        box-sizing: border-box;
+        flex: 1;
+      }
+      
+      .memory-section h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #00ccff;
+        font-size: 18px;
+      }
+      
+      .memory-line {
+        margin: 0;
+        color: #00ff41;
+        font-size: 15px;
+        padding: 4px 0;
+      }
+      
+      #memory-display {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px 20px;
+        font-size: 15px;
+      }
+      
+      @media (max-width: 600px) {
+        #memory-display {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      .question-section {
+        background-color: #0d2d0d;
+        border: 2px solid #00ff41;
+        padding: 25px;
+        margin: 0;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        min-height: 300px;
+      }
+      
+      .question-section h3 {
+        margin-top: 0;
+        margin-bottom: 20px;
+        color: #00ccff;
+        font-size: 20px;
+      }
+      
+      .answer-input {
+        background-color: #0a1f0a;
+        border: 2px solid #00ff41;
+        color: #00ff41;
+        padding: 12px 15px;
+        font-size: 18px;
+        width: 120px;
+        font-family: 'Courier New', monospace;
+        font-weight: bold;
+        text-align: center;
+      }
+      
+      .answer-input:focus {
+        outline: none;
+        border-color: #00ccff;
+        box-shadow: 0 0 10px rgba(0, 204, 255, 0.3);
+      }
+      
+      .submit-btn {
+        background-color: #00ff41;
+        color: #0a1f0a;
+        border: none;
+        padding: 12px 25px;
+        margin-left: 10px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        font-family: 'Courier New', monospace;
+      }
+      
+      .submit-btn:hover {
+        background-color: #00a020;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 255, 65, 0.3);
+      }
+      
+      .submit-btn:active {
+        transform: translateY(0);
+      }
+      
+      .feedback {
+        margin-top: 20px;
+        padding: 18px;
+        border-radius: 5px;
+        font-size: 15px;
+        line-height: 1.6;
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+        box-sizing: border-box;
+      }
+      
+      .feedback.correct {
+        background-color: rgba(0, 255, 65, 0.2);
+        border: 2px solid #00ff41;
+        color: #00ff41;
+      }
+      
+      .feedback.incorrect {
+        background-color: rgba(255, 65, 65, 0.2);
+        border: 2px solid #ff4141;
+        color: #ff4141;
+      }
+      
+      .legend {
+        background-color: #0d2d0d;
+        border: 2px solid #00ff41;
+        padding: 20px;
+        margin: 15px auto 25px;
+        max-width: 1400px;
+        box-sizing: border-box;
+      }
+      
+      .legend h3 {
+        margin: 0 0 15px 0;
+        font-size: 18px;
+      }
+      
+      .legend-items {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px 40px;
+      }
+      
+      @media (max-width: 800px) {
+        .legend-items {
+          grid-template-columns: 1fr;
+        }
+      }
+      
+      .legend-item {
+        margin: 0;
+        color: #00ff41;
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      
+      .legend-symbol {
+        color: #00ccff;
+        font-weight: bold;
+        font-size: 18px;
+        display: inline-block;
+        min-width: 40px;
+      }
+      
+      .nav-links {
+        margin: 0 0 20px 0;
+        text-align: left;
+      }
+      
+      .nav-links a {
+        color: #00ccff;
+        text-decoration: none;
+        margin-right: 20px;
+        font-size: 18px;
+      }
+      
+      .nav-links a:hover {
+        color: #00ff41;
+        text-decoration: underline;
+      }
+      
+      body {
+        padding: 0 20px 40px;
+        max-width: 1440px;
+        margin: 0 auto;
+      }
+      
+      h1 {
+        text-align: center;
+        margin: 20px 0 15px;
+        font-size: 32px;
+        color: #00ff41;
+        text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
+      }
+      
+      .stats {
+        background-color: #0d2d0d;
+        border: 2px solid #00ff41;
+        padding: 15px 30px;
+        margin: 15px auto 20px;
+        display: flex;
+        justify-content: space-around;
+        max-width: 500px;
+        gap: 30px;
+      }
+      
+      .stat-item {
+        text-align: center;
+      }
+      
+      .stat-value {
+        font-size: 24px;
+        font-weight: bold;
+        color: #00ff41;
+      }
+      
+      .stat-label {
+        font-size: 13px;
+        color: #00ccff;
+        margin-top: 5px;
+      }
+      
+      #question-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 55% 45%;
+        gap: 25px;
+        align-items: start;
+      }
+      
+      .left-column {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        min-height: 500px;
+      }
+      
+      .right-column {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        position: sticky;
+        top: 20px;
+        min-height: 500px;
+      }
+      
+      /* Mobile responsive */
+      @media (max-width: 1024px) {
+        #question-container {
+          grid-template-columns: 1fr;
+        }
+        
+        .right-column {
+          position: static;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="nav-links">
+      <a href="index.html">← Back to Treasure Hunt</a>
+    </div>
+    
+    <h1>Addressing Modes Practice</h1>
+    
+    <div class="stats">
+      <div class="stat-item">
+        <div class="stat-value" id="correct-count">0</div>
+        <div class="stat-label">Correct</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="total-count">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="percentage">0%</div>
+        <div class="stat-label">Success Rate</div>
+      </div>
+    </div>
+    
+    <div class="legend">
+      <h3>Addressing Mode Symbols:</h3>
+      <div class="legend-items">
+        <div class="legend-item">
+          <span class="legend-symbol">#n</span> - <strong>Immediate</strong>
+        </div>
+        <div class="legend-item">
+          <span class="legend-symbol">&n</span> - <strong>Direct</strong>
+        </div>
+        <div class="legend-item">
+          <span class="legend-symbol">~n</span> - <strong>Indirect</strong>
+        </div>
+        <div class="legend-item">
+          <span class="legend-symbol">[n]</span> - <strong>Indexed</strong>
+        </div>
+      </div>
+    </div>
+    
+    <div id="question-container">
+      <div class="left-column">
+        <div class="code-block">
+          <h3>Program Code:</h3>
+          <div id="code-display"></div>
+        </div>
+        
+        <div class="memory-section">
+          <h3>Memory Contents:</h3>
+          <div style="color: #00ccff; margin-bottom: 15px; font-size: 16px; font-weight: bold;">
+            Index Register: <span id="index-register-value" style="color: #00ff41; font-size: 18px;">0</span>
+          </div>
+          <div id="memory-display"></div>
+        </div>
+      </div>
+      
+      <div class="right-column">
+        <div class="question-section">
+          <h3 id="question-text">What value will be output?</h3>
+          <div style="margin-top: 20px; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px;">
+            <input type="number" id="answer-input" class="answer-input" placeholder="Answer">
+            <button id="submit-btn" class="submit-btn">Submit</button>
+            <button id="next-btn" class="submit-btn" style="display: none;">Next Question</button>
+          </div>
+          <div id="feedback" class="feedback" style="display: none;"></div>
+        </div>
+      </div>
+    </div>
+    
+    <script src="practice.js"></script>
+  </body>
+</html>
